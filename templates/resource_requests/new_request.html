@@ -1,0 +1,99 @@
+{% extends 'resource_requests/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}New Request{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h1 class="h2">New Resource Request</h1>
+        <p class="text-muted">Submit a new request for ICT resources</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Request Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.resource|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.required_date|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.duration|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Department</label>
+                                <input type="text" class="form-control" value="{{ request.user.profile.department }}" disabled>
+                                <div class="form-text text-muted">Your department is set automatically from your profile.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.purpose|as_crispy_field }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.additional_info|as_crispy_field }}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Request Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert" style="background-color: rgba(212, 183, 44, 0.1); border-color: var(--accent); color: var(--accent-dark);">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Important Information</strong>
+                </div>
+                
+                <p class="mb-3">Please provide detailed information about your resource request to help us process it efficiently.</p>
+                
+                <h6 class="fw-bold">Required Fields:</h6>
+                <ul class="mb-3">
+                    <li>Resource - Select the ICT resource you need</li>
+                    <li>Required Date - When you need the resource</li>
+                    <li>Duration - How long you need the resource</li>
+                    <li>Purpose - Why you need this resource</li>
+                </ul>
+                
+                <h6 class="fw-bold">Approval Process:</h6>
+                <ol class="mb-0">
+                    <li>Submit your request</li>
+                    <li>Department director reviews the request</li>
+                    <li>You'll receive notification upon approval/rejection</li>
+                    <li>If approved, the resource will be allocated as requested</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

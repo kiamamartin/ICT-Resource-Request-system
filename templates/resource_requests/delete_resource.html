@@ -1,0 +1,51 @@
+{% extends 'resource_requests/base.html' %}
+
+{% block title %}Delete Resource{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h1 class="h2">Delete Resource</h1>
+        <p class="text-muted">Permanently remove a resource</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <p>Are you sure you want to delete the following resource?</p>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold">Name:</h6>
+                    <p>{{ resource.name }}</p>
+                    
+                    <h6 class="fw-bold">Description:</h6>
+                    <p>{{ resource.description|default:"Not provided" }}</p>
+                    
+                    <h6 class="fw-bold">Status:</h6>
+                    <p>
+                        {% if resource.is_available %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'resources' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Delete Resource

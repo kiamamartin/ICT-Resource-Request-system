@@ -1,0 +1,170 @@
+{% extends 'resource_requests/base.html' %}
+{% load static %}
+
+{% block title %}Register - ICT Resource Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+    
+    .register-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .register-logo {
+        max-width: 150px;
+        margin-bottom: 1rem;
+    }
+    
+    .register-card {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border-radius: 0.5rem;
+    }
+    
+    .register-card .card-header {
+        background-color: var(--primary);
+        color: var(--text-on-dark);
+        text-align: center;
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 1.5rem;
+    }
+    
+    .register-form {
+        padding: 2rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.25rem rgba(212, 183, 44, 0.25);
+    }
+    
+    .btn-register {
+        background-color: var(--accent);
+        border-color: var(--accent);
+        color: var(--secondary);
+        font-weight: 500;
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    .btn-register:hover {
+        background-color: var(--accent-dark);
+        border-color: var(--accent-dark);
+        color: var(--secondary);
+    }
+    
+    .register-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-header">
+        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-jX378bJnH5hQtKpT0XdjDTLRjNWIEH.png" alt="Judiciary of Kenya Logo" class="register-logo">
+        <h1 class="h3">ICT Resource Management</h1>
+        <p class="text-muted">Create a new account</p>
+    </div>
+    
+    <div class="card register-card">
+        <div class="card-header">
+            <h2 class="h4 mb-0">Register</h2>
+        </div>
+        <div class="card-body register-form">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    Please correct the errors below.
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        <input type="text" name="username" id="id_username" class="form-control" required>
+                        {% if form.username.errors %}
+                            <div class="text-danger">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        <input type="email" name="email" id="id_email" class="form-control" required>
+                        {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control">
+                        {% if form.first_name.errors %}
+                            <div class="text-danger">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control">
+                        {% if form.last_name.errors %}
+                            <div class="text-danger">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password1" class="form-label">Password</label>
+                        <input type="password" name="password1" id="id_password1" class="form-control" required>
+                        {% if form.password1.errors %}
+                            <div class="text-danger">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password2" class="form-label">Confirm Password</label>
+                        <input type="password" name="password2" id="id_password2" class="form-control" required>
+                        {% if form.password2.errors %}
+                            <div class="text-danger">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_department" class="form-label">Department</label>
+                    <select name="department" id="id_department" class="form-select">
+                        <option value="">Select Department</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}">{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.department.errors %}
+                        <div class="text-danger">{{ form.department.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-register">
+                    <i class="fas fa-user-plus me-2"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="register-footer">
+        <p>Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+        <p>Judiciary of Kenya &copy; {% now "Y" %}</p>
+    </div>
+</div>
+{% endblock %}

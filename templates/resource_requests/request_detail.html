@@ -1,0 +1,220 @@
+{% extends 'resource_requests/base.html' %}
+{% load static %}
+
+{% block title %}Request Details{% endblock %}
+
+{% block extra_css %}
+<style>
+.signature-preview {
+    max-width: 100%;
+    max-height: 100px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px;
+    margin-top: 10px;
+    background-color: white;
+}
+
+.stamp-container {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.stamp-date {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.request-detail-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.request-detail-value {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.request-section {
+    margin-bottom: 1.5rem;
+}
+
+.request-section-divider {
+    margin: 1.5rem 0;
+    border-color: var(--border-color);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+<div class="col">
+    <a href="{% url 'my_requests' %}" class="text-decoration-none" style="color: var(--accent);">
+        <i class="fas fa-arrow-left me-1"></i> Back to Requests
+    </a>
+</div>
+</div>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+<div>
+    <h1 class="h2">Request #{{ request.request_id }}</h1>
+    <p class="text-muted">Submitted on {{ request.submitted_at|date:"F d, Y" }}</p>
+</div>
+
+<div class="mt-3 mt-md-0">
+    <button id="print-button" class="btn btn-outline-secondary btn-sm me-2 btn-print">
+        <i class="fas fa-print me-1"></i> Print Request
+    </button>
+    {% if request.status == 'pending' and user.is_staff %}
+        <a href="{% url 'approve_request' request.request_id %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-check-circle me-1"></i> Review Request
+        </a>
+    {% endif %}
+</div>
+</div>
+
+<div class="card border-0 shadow-sm">
+<div class="card-header">
+    <h5 class="card-title mb-0">Request Details</h5>
+</div>
+<div class="card-body">
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="request-detail-label">Department</h6>
+            <p class="request-detail-value">{{ request.department }}</p>
+        </div>
+        <div class="col-md-6">
+            <h6 class="request-detail-label">Requestor</h6>
+            <p class="request-detail-value">{{ request.requestor.get_full_name|default:request.requestor.username }}</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="request-detail-label">Email</h6>
+            <p class="request-detail-value">{{ request.requestor.email }}</p>
+        </div>
+        <div class="col-md-6">
+            <h6 class="request-detail-label">Status</h6>
+            {% if request.status == 'pending' %}
+                <span class="badge bg-warning">Pending Approval</span>
+            {% elif request.status == 'approved' %}
+                <span class="badge bg-success">Approved</span>
+            {% elif request.status == 'rejected' %}
+                <span class="badge bg-danger">Rejected</span>
+            {% elif request.status == 'completed' %}
+                <span class="badge bg-secondary">Completed</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <hr class="request-section-divider">
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="request-detail-label">Resource</h6>
+            <p class="request-detail-value">{{ request.resource }}</p>
+        </div>
+        <div class="col-md-6">
+            <h6 class="request-detail-label">Required Date</h6>
+            <p class="request-detail-value">{{ request.required_date }}</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="request-detail-label">Duration</h6>
+            <p class="request-detail-value">{{ request.get_duration_display }}</p>
+        </div>
+        <div class="col-md-6">
+            <h6 class="request-detail-label">Submitted</h6>
+            <p class="request-detail-value">{{ request.submitted_at }}</p>
+        </div>
+    </div>
+    
+    <hr class="request-section-divider">
+    
+    <div class="request-section">
+        <h6 class="request-detail-label">Purpose</h6>
+        <p class="request-detail-value">{{ request.purpose }}</p>
+    </div>
+    
+    <div class="request-section">
+        <h6 class="request-detail-label">Additional Information</h6>
+        <p class="request-detail-value">{{ request.additional_info|default:"None provided" }}</p>
+    </div>
+    
+    {% if request.status == 'approved' or request.status == 'rejected' %}
+    <hr class="request-section-divider">
+    
+    <div class="request-section">
+        <h6 class="request-detail-label">Director Notes</h6>
+        <p class="request-detail-value">{{ request.director_notes|default:"None provided" }}</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="request-detail-label">Approved/Rejected By</h6>
+            <p class="request-detail-value">{{ request.approved_by.get_full_name|default:request.approved_by.username|default:"N/A" }}</p>
+        </div>
+        <div class="col-md-6">
+            <h6 class="request-detail-label">Approval/Rejection Date</h6>
+            <p class="request-detail-value">{{ request.approved_at|default:"N/A" }}</p>
+        </div>
+    </div>
+    
+    {% if request.signature_image %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="stamp-container">
+                <h6 class="text-muted mb-3">Electronic Stamp</h6>
+                <img src="{{ request.signature_image.url }}" alt="E-Signature" class="signature-preview">
+                <div class="stamp-date">
+                    Electronically signed on {{ request.stamp_date|date:"F d, Y \a\t h:i A" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+</div>
+
+{% if request.status == 'approved' %}
+<div class="card border-0 shadow-sm mt-4">
+<div class="card-header">
+    <h5 class="card-title mb-0">Ledger Entry</h5>
+</div>
+<div class="card-body">
+    {% if ledger_entry %}
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h6 class="request-detail-label">Ledger ID</h6>
+                <p class="request-detail-value">{{ ledger_entry.ledger_id }}</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="request-detail-label">Status</h6>
+                <span class="badge bg-success">{{ ledger_entry.get_status_display }}</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="request-detail-label">Created At</h6>
+                <p class="request-detail-value">{{ ledger_entry.created_at }}</p>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">No ledger entry found for this request.</p>
+    {% endif %}
+</div>
+</div>
+{% endif %}
+{% endblock %}

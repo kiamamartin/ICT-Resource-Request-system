@@ -1,0 +1,44 @@
+{% extends 'resource_requests/base.html' %}
+{% load static %}
+
+{% block title %}Page Not Found - ICT Resource Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        text-align: center;
+        padding: 5rem 1rem;
+    }
+    
+    .error-logo {
+        max-width: 150px;
+        margin-bottom: 2rem;
+    }
+    
+    .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    
+    .error-message {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <img src="{% static 'resource_request/images/jud-logo.png' %}" alt="Judiciary of Kenya Logo" class="error-logo">
+    
+    <div class="error-code">404</div>
+    <div class="error-message">Page Not Found</div>
+    <p class="mb-4">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+    
+    <a href="{% url 'dashboard' %}" class="btn btn-primary">
+        <i class="fas fa-home me-2"></i> Return to Dashboard
+    </a>
+</div>
+{% endblock %}

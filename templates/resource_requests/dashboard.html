@@ -1,0 +1,361 @@
+{% extends 'resource_requests/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        border-left: 4px solid var(--accent);
+        transition: transform 0.2s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-icon {
+        font-size: 2.5rem;
+        color: var(--accent);
+    }
+    
+    .recent-activity {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .activity-item {
+        border-left: 3px solid var(--accent);
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .activity-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--accent);
+    }
+    
+    .welcome-banner {
+        background-color: var(--primary);
+        color: var(--text-on-dark);
+        border-radius: 0.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 100%;
+        background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-banner shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+            <p class="lead">
+                {% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
+                    Manage and approve resource requests from your dashboard.
+                {% else %}
+                    Request and track ICT resources from your dashboard.
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-4 text-center d-none d-md-block">
+            <i class="fas fa-desktop fa-5x text-white-50"></i>
+        </div>
+    </div>
+</div>
+
+{% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
+<!-- ICT Director Dashboard -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Pending Requests</h6>
+                        <h3 class="mb-0">{{ pending_approvals|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'pending_requests' %}" class="btn btn-sm btn-outline-primary w-100">View All</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Approved</h6>
+                        <h3 class="mb-0">{{ approved_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}?status=approved" class="btn btn-sm btn-outline-primary w-100">View Approved</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Rejected</h6>
+                        <h3 class="mb-0">{{ rejected_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}?status=rejected" class="btn btn-sm btn-outline-primary w-100">View Rejected</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Pending Approvals</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_approvals %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Department</th>
+                                    <th>Requestor</th>
+                                    <th>Resource</th>
+                                    <th>Required Date</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in pending_approvals %}
+                                <tr>
+                                    <td>{{ request.request_id }}</td>
+                                    <td>{{ request.department }}</td>
+                                    <td>{{ request.requestor.get_full_name|default:request.requestor.username }}</td>
+                                    <td>{{ request.resource }}</td>
+                                    <td>{{ request.required_date }}</td>
+                                    <td>{{ request.submitted_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'approve_request' request.request_id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-check-circle me-1"></i> Review
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">No pending approvals at this time.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent text-end">
+                <a href="{% url 'pending_requests' %}" class="btn btn-sm btn-outline-primary">View All Pending</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Department User Dashboard -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">My Requests</h6>
+                        <h3 class="mb-0">{{ my_requests_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}" class="btn btn-sm btn-outline-primary w-100">View All</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Pending</h6>
+                        <h3 class="mb-0">{{ pending_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}?status=pending" class="btn btn-sm btn-outline-primary w-100">View Pending</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Approved</h6>
+                        <h3 class="mb-0">{{ approved_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}?status=approved" class="btn btn-sm btn-outline-primary w-100">View Approved</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon me-3">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Rejected</h6>
+                        <h3 class="mb-0">{{ rejected_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'my_requests' %}?status=rejected" class="btn btn-sm btn-outline-primary w-100">View Rejected</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Resource</th>
+                                    <th>Required Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in recent_requests %}
+                                <tr>
+                                    <td>{{ request.request_id }}</td>
+                                    <td>{{ request.resource }}</td>
+                                    <td>{{ request.required_date }}</td>
+                                    <td>
+                                        {% if request.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif request.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif request.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif request.status == 'completed' %}
+                                            <span class="badge bg-secondary">Completed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'request_detail' request.request_id %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">No recent requests found.</p>
+                        <a href="{% url 'new_request' %}" class="btn btn-primary mt-3">Create New Request</a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent text-end">
+                <a href="{% url 'my_requests' %}" class="btn btn-sm btn-outline-primary">View All Requests</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'new_request' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> New Request
+                    </a>
+                    
+                    <a href="{% url 'my_requests' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list-alt me-2"></i> View My Requests
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

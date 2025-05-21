@@ -1,0 +1,87 @@
+[
+    {
+        "model": "resource_requests.department",
+        "pk": 1,
+        "fields": {
+            "name": "Finance",
+            "description": "Financial management and accounting"
+        }
+    },
+    {
+        "model": "resource_requests.department",
+        "pk": 2,
+        "fields": {
+            "name": "Human Resources",
+            "description": "Employee management and recruitment"
+        }
+    },
+    {
+        "model": "resource_requests.department",
+        "pk": 3,
+        "fields": {
+            "name": "Marketing",
+            "description": "Marketing and communications"
+        }
+    },
+    {
+        "model": "resource_requests.department",
+        "pk": 4,
+        "fields": {
+            "name": "Operations",
+            "description": "Day-to-day operations and logistics"
+        }
+    },
+    {
+        "model": "resource_requests.department",
+        "pk": 5,
+        "fields": {
+            "name": "IT",
+            "description": "Information Technology"
+        }
+    },
+    {
+        "model": "resource_requests.resource",
+        "pk": 1,
+        "fields": {
+            "name": "Projector",
+            "description": "Portable projector for presentations",
+            "is_available": true
+        }
+    },
+    {
+        "model": "resource_requests.resource",
+        "pk": 2,
+        "fields": {
+            "name": "Laptop",
+            "description": "Portable computer for presentations and work",
+            "is_available": true
+        }
+    },
+    {
+        "model": "resource_requests.resource",
+        "pk": 3,
+        "fields": {
+            "name": "Conference Room",
+            "description": "Meeting room with presentation equipment",
+            "is_available": true
+        }
+    },
+    {
+        "model": "resource_requests.resource",
+        "pk": 4,
+        "fields": {
+            "name": "Audio System",
+            "description": "Portable audio system for events",
+            "is_available": true
+        }
+    },
+    {
+        "model": "resource_requests.resource",
+        "pk": 5,
+        "fields": {
+            "name": "Video Conference Equipment",
+            "description": "Equipment for video conferencing",
+            "is_available": true
+        }
+    }
+]
