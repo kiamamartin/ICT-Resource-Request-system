@@ -9,7 +9,7 @@ from django.utils import timezone
 from .models import ResourceRequest, Department, Resource, Ledger, UserProfile
 from .forms import (
     ResourceRequestForm, ApprovalForm, DepartmentForm, ResourceForm, 
-    UserRegisterForm, UserProfileForm, UserForm, ProfileForm
+    UserRegisterForm, UserProfileForm, UserForm, ProfileForm, DelegateApprovalRightsForm
 )
 import datetime
 import uuid
@@ -576,3 +576,112 @@ def save_theme_preference(request):
         return JsonResponse({'status': 'success'})
     
     return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def delegate_approval_rights(request):
+    # Check if user is a director with approval rights
+    if not (request.user.profile.is_director and request.user.profile.has_approval_rights):
+        messages.error(request, "You don't have permission to delegate approval rights.")
+        return redirect('dashboard')
+    
+    # Get all deputy directors
+    deputy_directors = UserProfile.objects.filter(is_deputy_director=True)
+    
+    if request.method == 'POST':
+        form = DelegateApprovalRightsForm(request.POST)
+        form.fields['delegate_to'].queryset = deputy_directors
+        
+        if form.is_valid():
+            delegate_to = form.cleaned_data['delegate_to']
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            reason = form.cleaned_data['reason']
+            
+            # Remove approval rights from director
+            director_profile = request.user.profile
+            director_profile.has_approval_rights = False
+            director_profile.save()
+            
+            # Grant approval rights to deputy
+            delegate_to.has_approval_rights = True
+            delegate_to.approval_rights_delegated_at = start_date
+            delegate_to.approval_rights_delegation_end = end_date
+            delegate_to.approval_rights_delegated_by = director_profile
+            delegate_to.save()
+            
+            # Create a log entry for the delegation
+            DelegationLog.objects.create(
+                delegated_by=request.user,
+                delegated_to=delegate_to.user,
+                start_date=start_date,
+                end_date=end_date,
+                reason=reason
+            )
+            
+            # Send notification to deputy director
+            # (You can implement this using Django signals or a notification system)
+            
+            messages.success(request, f"Approval rights successfully delegated to {delegate_to.user.get_full_name()}.")
+            return redirect('dashboard')
+    else:
+        form = DelegateApprovalRightsForm()
+        form.fields['delegate_to'].queryset = deputy_directors
+    
+    context = {
+        'form': form,
+    }
+    
+    return render(request, 'resource_requests/delegate_approval_rights.html', context)
+
+@login_required
+def reclaim_approval_rights(request):
+    # Check if user is a director without approval rights
+    if not (request.user.profile.is_director and not request.user.profile.has_approval_rights):
+        messages.error(request, "You don't have permission to reclaim approval rights.")
+        return redirect('dashboard')
+    
+    # Find the deputy who currently has approval rights
+    try:
+        deputy = UserProfile.objects.get(
+            is_deputy_director=True,
+            has_approval_rights=True,
+            approval_rights_delegated_by=request.user.profile
+        )
+    except UserProfile.DoesNotExist:
+        messages.error(request, "No active delegation found.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        # Remove approval rights from deputy
+        deputy.has_approval_rights = False
+        deputy.approval_rights_delegated_at = None
+        deputy.approval_rights_delegation_end = None
+        deputy.approval_rights_delegated_by = None
+        deputy.save()
+        
+        # Restore approval rights to director
+        director_profile = request.user.profile
+        director_profile.has_approval_rights = True
+        director_profile.save()
+        
+        # Update the delegation log
+        try:
+            log = DelegationLog.objects.filter(
+                delegated_by=request.user,
+                delegated_to=deputy.user,
+                actual_end_date__isnull=True
+            ).latest('created_at')
+            
+            log.actual_end_date = timezone.now()
+            log.save()
+        except DelegationLog.DoesNotExist:
+            pass
+        
+        messages.success(request, "Approval rights have been reclaimed successfully.")
+        return redirect('dashboard')
+    
+    context = {
+        'deputy': deputy,
+    }
+    
+    return render(request, 'resource_requests/reclaim_approval_rights.html', context)
