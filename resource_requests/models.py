@@ -35,6 +35,15 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='staff')
     is_director = models.BooleanField(default=False)
+    is_deputy_director = models.BooleanField(default=False)
+    has_approval_rights = models.BooleanField(default=False)
+    approval_rights_delegated_at = models.DateTimeField(null=True, blank=True)
+    approval_rights_delegation_end = models.DateTimeField(null=True, blank=True)
+    approval_rights_delegated_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='delegated_to'
+    )
     is_admin = models.BooleanField(default=False)
     theme_preference = models.CharField(
         max_length=10,
@@ -46,6 +55,18 @@ class UserProfile(models.Model):
     )
     signature_image = models.ImageField(upload_to="signatures/", blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        # If this user is being set as director, ensure they have approval rights
+        if self.is_director and not self.has_approval_rights:
+            self.has_approval_rights = True
+        
+        # If this is a new user and they're being set as deputy director,
+        # ensure they don't have approval rights by default
+        if self.pk is None and self.is_deputy_director:
+            self.has_approval_rights = False
+            
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.user.username
 
