@@ -25,4 +25,5 @@ urlpatterns = [
     path('save-theme-preference/', views.save_theme_preference, name='save_theme_preference'),
     path('delegate-approval-rights/', views.delegate_approval_rights, name='delegate_approval_rights'),
     path('reclaim-approval-rights/', views.reclaim_approval_rights, name='reclaim_approval_rights'),
+    path('delegation-history/', views.delegation_history, name='delegation_history'),
 ]
