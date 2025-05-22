@@ -167,9 +167,18 @@ def approve_request(request, request_id):
     request_obj = get_object_or_404(ResourceRequest, request_id=request_id)
     
     # Check if user has permission to approve requests
-    if not is_ict_director(request.user):
+    # Updated to check for has_approval_rights instead of just is_director
+    if not ((request.user.profile.is_director or request.user.profile.is_deputy_director) and 
+            request.user.profile.has_approval_rights or 
+            request.user.profile.is_admin or 
+            request.user.is_staff):
         messages.error(request, "You don't have permission to approve requests.")
         return redirect('dashboard')
+    
+    # Directors can only approve requests from their department
+    if (request.user.profile.is_director or request.user.profile.is_deputy_director) and request.user.profile.department != request_obj.department:
+        messages.error(request, "You can only approve requests from your department.")
+        return redirect('pending_requests')
     
     if request.method == 'POST':
         form = ApprovalForm(request.POST)
@@ -225,7 +234,7 @@ def approve_request(request, request_id):
     
     return render(request, 'resource_requests/approve_request.html', context)
 
-# Keep the rest of your views as they are
+
 @login_required
 def departments(request):
     # Check if user has permission to view departments
