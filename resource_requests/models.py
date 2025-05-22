@@ -142,3 +142,15 @@ class Ledger(models.Model):
 
     def __str__(self):
         return f"Ledger {self.ledger_id} - {self.resource}"
+
+class DelegationLog(models.Model):
+    delegated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delegations_made')
+    delegated_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delegations_received')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    actual_end_date = models.DateTimeField(null=True, blank=True)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Delegation from {self.delegated_by} to {self.delegated_to}"
