@@ -134,12 +134,23 @@ def request_detail(request, request_id):
 @login_required
 def pending_requests(request):
     # Check if user has permission to view pending requests
-    if not is_ict_director(request.user):
+    # Updated to check for has_approval_rights
+    if not ((request.user.profile.is_director or request.user.profile.is_deputy_director) and 
+            request.user.profile.has_approval_rights or 
+            request.user.profile.is_admin or 
+            request.user.is_staff):
         messages.error(request, "You don't have permission to view pending requests.")
         return redirect('dashboard')
     
-    # ICT Directors see all pending requests
-    pending = ResourceRequest.objects.filter(status='pending').order_by('-submitted_at')
+    if (request.user.profile.is_director or request.user.profile.is_deputy_director) and request.user.profile.has_approval_rights:
+        # Directors or deputies with approval rights only see requests from their department
+        pending = ResourceRequest.objects.filter(
+            department=request.user.profile.department,
+            status='pending'
+        ).order_by('-submitted_at')
+    else:
+        # Admins see all pending requests
+        pending = ResourceRequest.objects.filter(status='pending').order_by('-submitted_at')
     
     paginator = Paginator(pending, 10)  # Show 10 requests per page
     page_number = request.GET.get('page')
@@ -685,3 +696,4 @@ def reclaim_approval_rights(request):
     }
     
     return render(request, 'resource_requests/reclaim_approval_rights.html', context)
+
