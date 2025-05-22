@@ -215,117 +215,171 @@
         .page-link:hover {
             color: var(--accent-dark);
         }
+        
+        /* Header and navigation styles */
+        .header-top {
+            background-color: var(--primary);
+            padding: 15px 0;
+        }
+        
+        .header-bottom {
+            background-color: #162f25;
+            padding: 0;
+        }
+        
+        .header-bottom .navbar {
+            padding: 0;
+        }
+        
+        .header-bottom .nav-link {
+            padding: 12px 16px;
+        }
+        
+        .header-bottom .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        @media (max-width: 991.98px) {
+            .header-top {
+                padding: 10px 0;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+            
+            .navbar-logo {
+                height: 50px;
+            }
+            
+            .user-actions {
+                margin-top: 10px;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+    <!-- Header with Logo and Title -->
+    <div class="header-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <img src="{% static 'resource_request/images/jud-logo.png' %}" alt="Judiciary of Kenya Logo" class="navbar-logo">
-
-                ICT Resource Management
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-                            </a>
-                        </li>
-                        
-                        {% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'pending_requests' %}active{% endif %}" href="{% url 'pending_requests' %}">
-                                <i class="fas fa-clock me-1"></i> Pending Requests
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}" href="{% url 'my_requests' %}">
-                                <i class="fas fa-list-alt me-1"></i> My Requests
-                            </a>
-                        </li>
-                        
-                        {% if user.groups.all.0.name == 'DepartmentUser' or user.is_superuser %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'new_request' %}active{% endif %}" href="{% url 'new_request' %}">
-                                <i class="fas fa-plus-circle me-1"></i> New Request
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        {% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'ledger' %}active{% endif %}" href="{% url 'ledger' %}">
-                                <i class="fas fa-book me-1"></i> Ledger
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        {% if user.profile.is_admin or user.is_staff %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-cog me-1"></i> Admin
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                <li><a class="dropdown-item" href="{% url 'departments' %}">Departments</a></li>
-                                <li><a class="dropdown-item" href="{% url 'resources' %}">Resources</a></li>
-                                <li><a class="dropdown-item" href="{% url 'users' %}">Users</a></li>
-                            </ul>
-                        </li>
-                        {% endif %}
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link theme-toggle" href="#" id="themeToggle">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <a class="navbar-brand" href="{% url 'dashboard' %}">
+                        <img src="{% static 'resource_request/images/jud-logo.png' %}" alt="Judiciary of Kenya Logo" class="navbar-logo">
+                        ICT Resource Management
+                    </a>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <div class="user-actions">
+                        {% if user.is_authenticated %}
+                            <a class="nav-link theme-toggle text-white me-3" href="#" id="themeToggle">
                                 <i class="fas {% if request.user.profile.theme_preference == 'dark' %}fa-sun{% else %}fa-moon{% endif %} me-1"></i>
                                 <span class="d-none d-lg-inline">
                                     {% if request.user.profile.theme_preference == 'dark' %}Light Mode{% else %}Dark Mode{% endif %}
                                 </span>
                             </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                {{ user.get_full_name|default:user.username }}
-                                {% if user.is_superuser %}
-                                    <span class="badge bg-danger">Superuser</span>
-                                {% elif user.groups.all.0.name == 'ICTDirector' %}
-                                    <span class="badge bg-primary">ICT Director</span>
-                                {% elif user.groups.all.0.name == 'DepartmentUser' %}
-                                    <span class="badge bg-secondary">Department User</span>
-                                {% endif %}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'logout' %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item">Logout</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                            <div class="dropdown d-inline-block">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    {{ user.get_full_name|default:user.username }}
+                                    {% if user.is_superuser %}
+                                        <span class="badge bg-danger">Superuser</span>
+                                    {% elif user.groups.all.0.name == 'ICTDirector' %}
+                                        <span class="badge bg-primary">ICT Director</span>
+                                    {% elif user.groups.all.0.name == 'DepartmentUser' %}
+                                        <span class="badge bg-secondary">Department User</span>
+                                    {% endif %}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
+    
+    <!-- Navigation Menu Below Logo -->
+    <div class="header-bottom">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-dark">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            
+                            {% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'pending_requests' %}active{% endif %}" href="{% url 'pending_requests' %}">
+                                    <i class="fas fa-clock me-1"></i> Pending Requests
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}" href="{% url 'my_requests' %}">
+                                    <i class="fas fa-list-alt me-1"></i> My Requests
+                                </a>
+                            </li>
+                            
+                            {% if user.groups.all.0.name == 'DepartmentUser' or user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'new_request' %}active{% endif %}" href="{% url 'new_request' %}">
+                                    <i class="fas fa-plus-circle me-1"></i> New Request
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% if user.is_superuser or user.groups.all.0.name == 'ICTDirector' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'ledger' %}active{% endif %}" href="{% url 'ledger' %}">
+                                    <i class="fas fa-book me-1"></i> Ledger
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% if user.profile.is_admin or user.is_staff %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cog me-1"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'departments' %}">Departments</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'resources' %}">Resources</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'users' %}">Users</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <div class="container mt-4">
