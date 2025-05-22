@@ -706,3 +706,31 @@ def reclaim_approval_rights(request):
     
     return render(request, 'resource_requests/reclaim_approval_rights.html', context)
 
+@login_required
+def delegation_history(request):
+    # Check if user has permission to view delegation history
+    if not (request.user.profile.is_director or request.user.profile.is_deputy_director or 
+            request.user.profile.is_admin or request.user.is_staff):
+        messages.error(request, "You don't have permission to view delegation history.")
+        return redirect('dashboard')
+    
+    # Get delegation logs
+    if request.user.profile.is_director:
+        # Directors see their own delegations
+        logs = DelegationLog.objects.filter(delegated_by=request.user).order_by('-created_at')
+    elif request.user.profile.is_deputy_director:
+        # Deputy directors see delegations to them
+        logs = DelegationLog.objects.filter(delegated_to=request.user).order_by('-created_at')
+    else:
+        # Admins see all delegations
+        logs = DelegationLog.objects.all().order_by('-created_at')
+    
+    paginator = Paginator(logs, 10)  # Show 10 logs per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+    }
+    
+    return render(request, 'resource_requests/delegation_history.html', context)
