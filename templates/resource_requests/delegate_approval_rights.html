@@ -1,0 +1,64 @@
+{% extends 'resource_requests/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Delegate Approval Rights{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h1 class="h2">Delegate Approval Rights</h1>
+        <p class="text-muted">Transfer request approval rights to a deputy director</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Delegation Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Important:</strong> By delegating approval rights, you will temporarily lose the ability to approve resource requests. The deputy director will have full approval rights until the delegation period ends or until you manually reclaim them.
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {{ form|crispy }}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-shield me-1"></i> Delegate Approval Rights
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">About Delegation</h5>
+            </div>
+            <div class="card-body">
+                <p>When you delegate approval rights:</p>
+                
+                <ul class="mb-4">
+                    <li>The deputy director will be able to approve or reject resource requests</li>
+                    <li>You will not be able to approve requests during the delegation period</li>
+                    <li>The delegation will automatically expire at the end date</li>
+                    <li>You can manually reclaim approval rights at any time</li>
+                </ul>
+                
+                <p class="mb-0"><strong>Note:</strong> Only one person can have approval rights at any time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

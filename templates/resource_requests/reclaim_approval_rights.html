@@ -1,0 +1,55 @@
+{% extends 'resource_requests/base.html' %}
+
+{% block title %}Reclaim Approval Rights{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h1 class="h2">Reclaim Approval Rights</h1>
+        <p class="text-muted">Take back request approval rights from deputy director</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Confirm Reclaim</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Confirmation Required:</strong> You are about to reclaim approval rights from the deputy director.
+                </div>
+                
+                <p>You are about to reclaim approval rights from:</p>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold">Deputy Director:</h6>
+                    <p>{{ deputy.user.get_full_name }}</p>
+                    
+                    <h6 class="fw-bold">Delegation Start Date:</h6>
+                    <p>{{ deputy.approval_rights_delegated_at }}</p>
+                    
+                    <h6 class="fw-bold">Scheduled End Date:</h6>
+                    <p>{{ deputy.approval_rights_delegation_end }}</p>
+                </div>
+                
+                <p>After reclaiming, you will have full approval rights for resource requests, and the deputy director will no longer be able to approve requests.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-shield me-1"></i> Reclaim Approval Rights
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
