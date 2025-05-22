@@ -371,6 +371,9 @@
                                     <li><a class="dropdown-item" href="{% url 'departments' %}">Departments</a></li>
                                     <li><a class="dropdown-item" href="{% url 'resources' %}">Resources</a></li>
                                     <li><a class="dropdown-item" href="{% url 'users' %}">Users</a></li>
+                                    {% if user.profile.is_admin or user.is_staff or user.profile.is_director or user.profile.is_deputy_director %}
+<li><a class="dropdown-item" href="{% url 'delegation_history' %}">Delegation History</a></li>
+{% endif %}
                                 </ul>
                             </li>
                             {% endif %}
