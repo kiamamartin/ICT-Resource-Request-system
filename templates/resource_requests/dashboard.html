@@ -275,6 +275,50 @@
                 <a href="{% url 'my_requests' %}?status=rejected" class="btn btn-sm btn-outline-primary w-100">View Rejected</a>
             </div>
         </div>
+     {% if user.profile.is_director or user.profile.is_deputy_director %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Approval Rights Status</h5>
+    </div>
+    <div class="card-body">
+        {% if user.profile.is_director and user.profile.has_approval_rights %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>You currently have approval rights.</strong>
+            </div>
+            <p>As the ICT Director, you can approve or reject resource requests. If you're going on leave, you can delegate these rights to a deputy director.</p>
+            <a href="{% url 'delegate_approval_rights' %}" class="btn btn-primary">
+                <i class="fas fa-user-shield me-1"></i> Delegate Approval Rights
+            </a>
+        {% elif user.profile.is_director and not user.profile.has_approval_rights %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>You have delegated your approval rights.</strong>
+            </div>
+            {% with deputy=user.profile.delegated_to.first %}
+                {% if deputy %}
+                    <p>You have delegated approval rights to {{ deputy.user.get_full_name }} until {{ deputy.approval_rights_delegation_end|date:"F d, Y H:i" }}.</p>
+                {% endif %}
+            {% endwith %}
+            <a href="{% url 'reclaim_approval_rights' %}" class="btn btn-primary">
+                <i class="fas fa-user-shield me-1"></i> Reclaim Approval Rights
+            </a>
+        {% elif user.profile.is_deputy_director and user.profile.has_approval_rights %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>You currently have approval rights.</strong>
+            </div>
+            <p>The ICT Director has delegated approval rights to you until {{ user.profile.approval_rights_delegation_end|date:"F d, Y H:i" }}. You can approve or reject resource requests during this period.</p>
+        {% else %}
+            <div class="alert alert-secondary">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>You do not currently have approval rights.</strong>
+            </div>
+            <p>As a Deputy Director, you may receive approval rights when the ICT Director is on leave.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}   
     </div>
 </div>
 
