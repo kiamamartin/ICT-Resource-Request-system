@@ -27,6 +27,7 @@ class UserProfile(models.Model):
         ('admin', 'Admin'),
         ('director', 'Director'),
         ('staff', 'Staff'),
+        
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     department = models.ForeignKey(

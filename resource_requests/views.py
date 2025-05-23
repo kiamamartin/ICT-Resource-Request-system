@@ -6,7 +6,7 @@ from django.contrib.auth.models import User, Group
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.utils import timezone
-from .models import ResourceRequest, Department, Resource, Ledger, UserProfile
+from .models import DelegationLog, ResourceRequest, Department, Resource, Ledger, UserProfile
 from .forms import (
     ResourceRequestForm, ApprovalForm, DepartmentForm, ResourceForm, 
     UserRegisterForm, UserProfileForm, UserForm, ProfileForm, DelegateApprovalRightsForm
@@ -143,11 +143,8 @@ def pending_requests(request):
         return redirect('dashboard')
     
     if (request.user.profile.is_director or request.user.profile.is_deputy_director) and request.user.profile.has_approval_rights:
-        # Directors or deputies with approval rights only see requests from their department
-        pending = ResourceRequest.objects.filter(
-            department=request.user.profile.department,
-            status='pending'
-        ).order_by('-submitted_at')
+        # Directors or deputies with approval rights see all pending requests
+        pending = ResourceRequest.objects.filter(status='pending').order_by('-submitted_at')
     else:
         # Admins see all pending requests
         pending = ResourceRequest.objects.filter(status='pending').order_by('-submitted_at')
@@ -175,10 +172,7 @@ def approve_request(request, request_id):
         messages.error(request, "You don't have permission to approve requests.")
         return redirect('dashboard')
     
-    # Directors can only approve requests from their department
-    if (request.user.profile.is_director or request.user.profile.is_deputy_director) and request.user.profile.department != request_obj.department:
-        messages.error(request, "You can only approve requests from your department.")
-        return redirect('pending_requests')
+   
     
     if request.method == 'POST':
         form = ApprovalForm(request.POST)
@@ -639,7 +633,7 @@ def delegate_approval_rights(request):
             )
             
             # Send notification to deputy director
-            # (You can implement this using Django signals or a notification system)
+            # ( using Django signals or a notification system)
             
             messages.success(request, f"Approval rights successfully delegated to {delegate_to.user.get_full_name()}.")
             return redirect('dashboard')
